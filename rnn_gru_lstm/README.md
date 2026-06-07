@@ -24,8 +24,8 @@ This directory explores the evolution of recurrent neural networks — from basi
 - Recruiter‑friendly, modular notebooks designed for clarity and reproducibility.
 ## Clone the repository:
 ========================
-git clone https://github.com/LKOBUI/nlp-foundations-to-llms.git
-cd nlp-foundations-to-llms/rnn_gru_lstm
+- git clone https://github.com/LKOBUI/nlp-foundations-to-llms.git
+- cd nlp-foundations-to-llms/rnn_gru_lstm
 
 ## Learning Goals:
 =================
