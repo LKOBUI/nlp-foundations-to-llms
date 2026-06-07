@@ -18,6 +18,7 @@ This directory focuses on the essential core mechanics of Natural Language Proce
 
 ### 1. Text Preprocessing Pipelines:
 ===================================
+
 Before language data can be fed into models, it must be cleaned. This repository shows how to implement:
 *   **Tokenization**: Splitting continuous strings into discrete operational words/tokens.
 *   **Normalization**: Lowercasing, removing special characters, and stripping punctuation.
@@ -26,6 +27,7 @@ Before language data can be fed into models, it must be cleaned. This repository
 
 ### 2. Numerical Representation (Vectorization):
 ================================================
+
 Computers cannot interpret raw text, so words must be converted into structured mathematical data:
 *   **Bag of Words (BoW)**: Representing document structures purely by word frequency counts.
 *   **TF-IDF (Term Frequency-Inverse Document Frequency)**: Scoring terms based on their significance to individual documents versus their distribution across an entire corpus.
@@ -33,12 +35,14 @@ Computers cannot interpret raw text, so words must be converted into structured 
 *   **Contextual embeddings (BERT, Hugging Face Transformers)
 ### 3. Rule-Based Applications:
 ===============================
+
 *   Using pre-defined lexicon dictionaries to map explicit word traits to numeric scales, establishing a deterministic mechanism for computing overall document sentiment scores.
 *   **Mathematical Notes**: Includes formulas for TF‑IDF and embedding concepts.
 ---
 
 ## Learning Goals:
 =================
+
 - Understand the pipeline from raw text → tokens → vectors → models.
 - Compare classical vectorization (Count, TF‑IDF) with modern embeddings.
 - Explore how rule‑based sentiment analysis works as a baseline.
@@ -49,6 +53,7 @@ Computers cannot interpret raw text, so words must be converted into structured 
 
 ### Prerequisites:
 ==================
+
 Make sure you have Python 3.8+ installed along with standard data science and NLP dependencies:
 
 ```bash
