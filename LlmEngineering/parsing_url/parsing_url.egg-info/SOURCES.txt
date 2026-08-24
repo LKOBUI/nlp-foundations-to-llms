@@ -1,0 +1,12 @@
+setup.py
+parsing_url/__init__.py
+parsing_url/contents.py
+parsing_url/headings.py
+parsing_url/images.py
+parsing_url/links.py
+parsing_url/metadata.py
+parsing_url.egg-info/PKG-INFO
+parsing_url.egg-info/SOURCES.txt
+parsing_url.egg-info/dependency_links.txt
+parsing_url.egg-info/requires.txt
+parsing_url.egg-info/top_level.txt
