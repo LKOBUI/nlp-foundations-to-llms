@@ -1,0 +1,273 @@
+So Q Laura is the name of the game.
+
+That's what we're going to be doing this week.
+
+And Q Laura is actually two different ideas, two different tricks, and one of them is called Laura,
+
+and the other is basically Q and so they're put together to make Q Laura, there are in fact two different
+
+tricks.
+
+Uh, so we're going to start by talking about Laura and make sure you're comfortable with that.
+
+And then throw the Q on the front of it.
+
+So here's the scoop.
+
+We are about to take a model.
+
+We are in fact going to choose llama 3.2 from meta, which is for whatever reason, I think because
+
+meta was first first to come up with these open source models.
+
+It's so common in industry that people start with llama that that's the model that they use.
+
+And so I think it's great prep for you to get really deeply into the llama model.
+
+If you wish to use any of the others, then for sure you can do so.
+
+They will all do great.
+
+They might beat the performance with llama, maybe not.
+
+You could give it a try, but llama is a fabulous model to start with.
+
+So we're going to be using llama 3.2 and that has 3 billion weights.
+
+It's a small model.
+
+3 billion weights is considered a small model, almost one that could fit on a on a device on a phone.
+
+But when it comes to training, 3 billion weights is still an enormous number of weights by by any normal
+
+size.
+
+Remember that that huge deep neural network from from last week was 200 million weights and that was
+
+maxing out my machine.
+
+3 billion is like off the charts.
+
+It's far too much for us to be training on a single GPU.
+
+You need to have some hardcore kit for that kind of thing.
+
+Um, so so there's a trick.
+
+There's a trick to allowing us to train something which is so enormous.
+
+And that trick is called Laura, which stands for Low Rank adapter.
+
+And I've already given some of the game away with what the trick is.
+
+But just in case you didn't get it, let's do the trick right now.
+
+So the architecture of llama 3.2 is something we briefly peaked at in week three, and you might remember
+
+it consists of 28 groups of modules that are stacked on top of each other that are known as the llama
+
+decoder layers, and each one It has different types of layers.
+
+It has these things called self-attention layers.
+
+You might have done some reading up on that when I showed you in week three.
+
+These are the layers that what they learn how to do through data is they learn which parts of the input
+
+sequence matter the most, which should they pay attention to in calculating the most likely next token.
+
+And then it has multi-layer perceptron layers MLP, which are these layers that are connected to the
+
+layer above and have weights.
+
+And then it has an activation function called Selu that I think I remember showing you briefly and then
+
+some Layernorm.
+
+So, so these are all all things which you could dig into.
+
+We'll look at them in a second and get a bit more perspective on them.
+
+But the the thing to keep in mind is that these all together form one module, and there are 28 of these
+
+modules stacked on top of each other.
+
+And this makes up the Lama architecture.
+
+And these parameters together take up 13GB of memory just before you even get to training.
+
+Just to have this in memory, it needs 13GB of GPU Ram.
+
+So as you remember, training involves these four steps.
+
+Training involves doing a forward pass through all of these 13GB of parameters and then calculating
+
+the loss.
+
+How wrong were we?
+
+And then the backward pass.
+
+If you were to twiddle all of these 3 billion parameters.
+
+13GB worth of data, would it make the loss better or worse?
+
+And then the step in the right direction to to reduce loss.
+
+Well, the first thing you do with Laura is you say, you know what?
+
+We're actually we're not going to change any of these parameters at all.
+
+None of these 3 billion parameters are going to get changed.
+
+We're going to freeze them, freeze all of these weights.
+
+They will not be subject to gradient based optimization.
+
+We won't be changing them at all.
+
+They're going to stay static.
+
+Okay.
+
+So we're not training them.
+
+Well so yes we are going to train.
+
+We are going to first select a few of these layers that we think are the ones that are most important,
+
+the ones that varying them is most likely to be able to shift the behavior of the llama model, and
+
+these are called the target modules.
+
+It sounds very sci fi.
+
+It sounds like something out of Star Trek, but they are modules.
+
+You remember I said that there are these these these stacks of modules, and the target modules are
+
+the ones that you are targeting.
+
+So that's what they are.
+
+So you're thinking, okay, I get you and we're going to shift the parameters of these target modules.
+
+No you don't change anything in llama 3.2 everything is frozen.
+
+But you've identified these target modules.
+
+You're like okay so so what do you do to these target modules.
+
+Well you come up with a separate matrix, a separate set of parameters of weights with less dimensions,
+
+way fewer dimensions than, than the llama architecture.
+
+And these things you have off to one side and because they have fewer dimensions and rank, is another
+
+word for dimensions, they are called low rank adapters.
+
+That's what you create these these little matrices of off to one side okay.
+
+And you're thinking, so what do we do with these matrices?
+
+Well, these matrices are used to adjust the target modules.
+
+They are applied to the target modules.
+
+And it's these smaller matrices that we train these we do the forward pass.
+
+We then do adjust these we calculate how much does changing these little things these little smaller
+
+parameters affect the loss.
+
+And then we shift these so they are used.
+
+We train these and we apply them to the target module.
+
+And what does it mean to apply them.
+
+It sounds very high tech.
+
+It is very high tech.
+
+They just get added together.
+
+So so basically it sounds Laura sounds like it's super fancy, super complex, and there's lots of lots
+
+of technical jargon that comes with it.
+
+But basically what we're saying is the llama model is too big to train, so we train something smaller
+
+instead that gets added to it.
+
+Uh, and uh, and that's how it works.
+
+And you train these smaller adapters, these Laura low rank adapters and, and as you train, every
+
+time that you do a forward pass through, you just add in the value of the low rank adapters.
+
+It sounds kind of simple right now.
+
+As always, there's a little bit of technicality.
+
+There's something that makes it slightly not not as simple as that.
+
+The problem comes to to matrix dimensions, and the fact that you can't just add a small set of matrices
+
+to big set of matrices.
+
+And so what actually happens in practice is that there aren't there isn't just one Lora set of parameters
+
+for each of the target modules.
+
+There are two.
+
+And they're known as lora A and lora B and lora A and lora B get multiplied together and that gets added
+
+to the target module.
+
+And the dimensions all worked out so that you can do that.
+
+And I'm not going to get deep into linear algebra.
+
+I'm going to show you the dimensionality.
+
+And if you wish you can look it up.
+
+Or you can just do it on a piece of paper and satisfy yourself that by combining multiplying together
+
+two smaller matrices which have a particular shape, you can get one larger matrix that can just get
+
+added in to the target module.
+
+It's not super important to know that.
+
+It's just that there is this trick that allows you to work with fewer parameters and have them added
+
+in and have them influence, affect, adapt the whole of the target module, allowing us to train a
+
+much smaller set of parameters.
+
+And whilst OpenAI isn't clear about how exactly fine tuning GPT works, all of us are sort of led to
+
+understand that this is they they almost certainly use this kind of technique.
+
+They also allow you to build to, to to fine tune a small matrix that then gets used to adapt larger
+
+layers in GPT.
+
+And it's what we're going to be doing this week.
+
+And as one final little extra when you do this, this multiplying and adding, you also scale up this
+
+matrix by a factor.
+
+And that factor is called alpha.
+
+That's how many how much you scale up the result of multiplying Laura a and or b.
+
+So in the end the target module has added to it alpha times A times Laura B.
+
+And that's that is everything about Laura.
+
+You now know Laura.

@@ -1,0 +1,107 @@
+# =========================
+# General Docker Commands
+# =========================
+docker --version                # Check Docker version
+docker image ls                 # List images
+docker info                     # Show Docker Engine info
+docker run hello-world          # Run test container
+
+# =========================
+# Jupyter Notebook Usage
+docker run -d -it --rm -p 8888:8888 --name mlx -v D:\ML\Docker\docker_first_notebook:/home/jovyan/work jupyter/scipy-notebook
+# Run with docker pakage mlx_pkg
+docker run -d -it --rm -p 8888:8888 --name mlx -v D:\ML\Docker\docker_first_notebook:/home/jovyan/work mlxpkg
+
+# Access in browser:
+http://localhost:8888
+# Open shell inside container
+docker exec -it mlflowX sh
+
+# View logs:
+docker logs mlflowX
+docker logs -f mlflowX   # follow logs
+docker-desktop://dashboard/logs
+
+# =========================
+# MLflow Usage
+# =========================
+docker run --rm ghcr.io/mlflow/mlflow:latest mlflow --version
+# Run MLflow server (basic):
+docker run -it --rm -p 5000:5555 ghcr.io/mlflow/mlflow:v3.16.0 mlflow server
+# Detached mode with name
+docker run -d -it --rm -p 5555:5000 --name mlflowX ghcr.io/mlflow/mlflow:v3.16.0 mlflow server --host 0.0.0.0
+docker ps                        # List running containers
+docker logs mlflowX              # View logs
+docker logs -f mlflowX           # Follow logs
+docker stop mlflowX              # Stop container
+docker exec -it mlflowX sh       # Open shell inside container
+
+# =========================
+# Image Management
+# =========================
+docker pull mlflow/mlflow:latest                 # Pull from Docker Hub
+docker pull ghcr.io/mlflow/mlflow:latest         # Pull from GHCR
+docker pull ghcr.io/mlflow/mlflow:v3.16.0-full   # Pull specific version
+docker scout quickview ghcr.io/mlflow/mlflow:latest  # Analyze image security
+
+
+
+# =========================
+# Check Python & Pip
+# Build a custom image (recommended for reproducibility)
+# =========================
+python --version
+pip --version
+
+# =========================
+# Method 1: Use requirements text files
+# =========================
+# Dockerfile
+vi Dockerfile
+# Contents:
+FROM jupyter/scipy-notebook
+COPY np_pkg.txt statemodel_pkg.txt viz_pkg.txt ml_pkg.txt ./
+RUN pip install -r np_pkg.txt \
+    -r statemodel_pkg.txt \
+    -r viz_pkg.txt \
+    -r ml_pkg.txt
+
+# Build image
+docker build -t mlx_pkg .
+
+# =========================
+# Method 2: Direct install in Dockerfile
+# =========================
+vi Dockerfile
+# Contents:
+FROM jupyter/scipy-notebook
+RUN pip install plotly sympy arviz scikit-learn pandas matplotlib seaborn
+
+# Build image
+docker build -t mlx_pkg .
+# If you want a clean slate, delete the old image
+docker rmi mlx_pkg
+# To see the list of Python packages inside your custom image
+docker run -it --rm mlx_pkg pip list
+
+# =========================
+# Run container with custom image
+# =========================
+docker run -d -it --rm -p 8888:8888 --name mlx -v D:/ML/Docker/docker_first_notebook:/home/jovyan/work mlx_pkg
+
+# Access Jupyter in browser:
+# http://localhost:8888
+
+# =========================
+# MLFLow + Notebook
+# =========================
+# Create a shared network
+Open power shell in admin mode
+docker network inspect mlflow-net
+docker network create mlflow-net
+docker run -d --name mlflow-server --network mlflow-net -p 5000:5000 ghcr.io/mlflow/mlflow:v3.16.0 mlflow server --host 0.0.0.0 --port 5000
+docker run -d -it --rm --name mlx --network mlflow-net -p 8888:8888 -v D:\ML\Docker\docker_first_notebook:/home/jovyan/work mlxpkg
+mlflow.set_tracking_uri("http://172.19.0.2:5000")
+
+
+

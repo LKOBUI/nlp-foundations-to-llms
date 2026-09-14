@@ -1,0 +1,185 @@
+Project Guide - Build it Yourself
+🧪 Lab Guide: Building a Local ML System Stack with Docker Compose
+In this lab, you’ll assemble a simulated production-ready ML system using Docker Compose. By the end, you’ll have a working stack with experiment tracking, model serving, and a user interface — all running in containers, all communicating via DNS-based service discovery.
+
+🧰 Prerequisites
+Docker and Docker Compose installed
+
+Project cloned and directory structure intact
+
+Docker , Python, UV Installed locally along with a shell to run bash script
+
+run_pipeline.sh script is executable
+
+Internet access for pulling MLflow image
+
+📁 Project Directory Structure
+house-price-predictor/
+├── run_pipeline.sh
+├── Dockerfile
+├── docker-compose.yml          # You will create this
+├── mlflow/
+│   └── compose.yaml            # Step 1: MLflow Compose file
+├── streamlit_app/
+│   ├── Dockerfile
+│   └── app.py
+└── ...
+✅ Step 1: Start MLflow with Docker Compose
+1.1 Create mlflow/compose.yaml
+version: "3.8"
+ 
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    ports:
+      - 5555:5000
+    command: mlflow server --host 0.0.0.0
+1.2 Start MLflow
+cd mlflow
+docker compose up -d
+1.3 Validate MLflow is Running
+docker compose ps
+docker compose logs -f mlflow
+Visit: http://localhost:5555
+
+You should see the MLflow UI.
+
+✅ Step 2: Run the Training Pipeline
+From the project root:
+
+Setup virtual environment and install dependencies
+
+uv venv --python 3.11 
+source .venv/bin/activate
+uv pip install -r requirements.txt
+Switch to parent directory of the project and run the pipeline as
+
+cd ..
+./run_pipeline.sh
+This will:
+
+Process raw data
+
+Engineer features
+
+Train a model
+
+Save model artifacts to models/trained/
+
+Confirm the files:
+
+cd hprice-predictor
+ls models/trained/
+Expected files:
+
+house_price_model.pkl
+
+preprocessor.pkl
+
+✅ Step 3: Add FastAPI and Streamlit Services to Docker Compose
+3.1 Create docker-compose.yml in project root
+services:
+  fastapi:
+    image: docker.io/xxxxxx/fastapi:dev. 
+    build:
+      context: "./"
+      dockerfile: "Dockerfile"
+    ports:
+      - "8000:8000"
+ 
+  streamlit:
+    image: docker.io/xxxxxx/streamlit:dev
+    build:
+      context: "streamlit_app/"
+      dockerfile: "Dockerfile"
+    ports:
+      - "8501:8501"
+Docker Compose spec for FastAPI and Streamlit
+
+where, replace xxxxxx with your Docker Hub Username.
+
+3.2 Build Images
+docker compose build
+docker image ls
+3.3 Run Services
+docker compose up -d
+3.4 Validate Services Are Running
+docker compose ps
+You should see both fastapi and streamlit in “Up” status.
+
+3.5 Check Logs
+docker compose logs -f fastapi
+docker compose logs -f streamlit
+3.6 Access Services
+FastAPI docs: http://localhost:8000/docs
+
+
+
+Streamlit UI: http://localhost:8501
+
+At this point, FastAPI and Streamlit are running, but not connected. Streamlit cannot call FastAPI yet because the connection isn’t defined.
+
+✅ Step 4: Add Service Discovery (Connect Streamlit to FastAPI)
+4.1 Update docker-compose.yml to Pass Environment Variable
+services:
+  fastapi:
+    image: docker.io/xxxxxx/fastapi:dev
+    build:
+      context: "./"
+      dockerfile: "Dockerfile"
+    ports:
+      - "8000:8000"
+ 
+  streamlit:
+    image: docker.io/xxxxxx/streamlit:dev
+    build:
+      context: "streamlit_app/"
+      dockerfile: "Dockerfile"
+    ports:
+      - "8501:8501"
+    environment:
+      API_URL: "http://fastapi:8000"
+where, replace xxxxxx with your Docker Hub Username.
+
+This allows Streamlit to reach the FastAPI container using Docker's internal DNS (fastapi resolves to the right container).
+
+4.2 Rebuild and Restart
+docker compose down
+docker compose up --build -d
+4.3 Validate Everything
+Confirm Streamlit works and can fetch predictions from FastAPI
+
+
+
+Check Streamlit logs:
+
+docker compose logs -f streamlit
+Use browser dev tools → Network tab to inspect prediction requests
+
+✅ Final Validation Checklist
+MilestoneStatusrun_pipeline.sh runs successfully and generates artifactsMLflow UI accessible at http://localhost:5555FastAPI docs available at http://localhost:8000/docsStreamlit UI loads at http://localhost:8501Streamlit connects to FastAPI and returns predictionsAll services run together via docker-compose up
+
+🧠 Bonus
+Try these advanced Compose commands:
+
+View container shell:
+
+docker compose exec fastapi /bin/bash
+Tail all logs:
+
+docker compose logs -f
+Tear down the stack:
+
+docker compose down
+🎉 You're Done!
+You've now assembled a fully functional, reproducible ML system using Docker Compose. This is the kind of local simulation used by real MLOps and AI Platform teams to validate workflows before scaling to cloud-native deployments.
+
+Want to level it up? Try:
+
+Volume mounting model files
+
+Connecting MLflow artifact tracking
+
+Deploying the same stack on a cloud VM
+
+#courses/docker-aiml/lab

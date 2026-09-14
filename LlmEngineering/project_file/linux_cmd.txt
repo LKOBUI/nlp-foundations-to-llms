@@ -1,0 +1,14 @@
+tty:
+ls /dev/tty*
+minicom -D /dev/ttyUSB0 -b 9600
+Press Ctrl+A then E → this toggles local echo on/off.
+
+1. Create Header file "USB_SERIAL.h" at path "C:\Users\TODO\Desktop\Abhi\AI\AI\Math\Hands-On\Notes\NLP\LLM Engineer\project_file"
+
+Define BUD_RATE 9600
+define tty device "/dev/ttyUSB0"
+
+Write C code
+1. Create API Open Serial tty device port. retrun if open devi fail
+2. create api for send buffer with argument const char *tx_buff, and length buff.
+   After successful tx print result with number of tx byte successfully
